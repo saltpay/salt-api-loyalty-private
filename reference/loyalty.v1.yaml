@@ -1,0 +1,471 @@
+openapi: 3.0.0
+info:
+  title: Loyalty
+  version: '1.0'
+  description: 'A backend service to enable management of loyalty card tokens. Authorisation is using a JWT token. Endpoints for logging in and refreshing tokens, together with log in credentials, will be provided separately on request.'
+  contact:
+    name: Salt Group
+servers:
+  - url: 'http://localhost:3100'
+paths:
+  /programs:
+    get:
+      summary: Get Loyalty Programs
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoyaltyProgramListResponse'
+      operationId: getLoyaltyPrograms
+      description: Get the list of available Loyalty Programs.
+      security:
+        - Authorization: []
+      tags:
+        - admin
+    post:
+      summary: Register Loyalty Program
+      operationId: registerLoyaltyProgram
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoyaltyProgramResponse'
+        '400':
+          description: 'Bad request, such as for a duplicate name, or missing fields.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '502':
+          description: "Bad gateway; i.e. when the service couldn't register the program with the Acquire service. May be retried."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+      description: Register a Loyalty Program with the Loyalty service. This will in turn register the program with the Acquire service for use with card acceptors. All fields are required and the Loyalty Program name must be unique.
+      security:
+        - Authorization: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoyaltyProgramProperties'
+      tags:
+        - admin
+    parameters: []
+  '/programs/{loyaltyProgramGuid}':
+    parameters:
+      - schema:
+          type: string
+        name: loyaltyProgramGuid
+        in: path
+        required: true
+    get:
+      summary: Get Loyalty Program
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoyaltyProgramResponse'
+      operationId: getLoyaltyProgram
+      security:
+        - Authorization: []
+      tags:
+        - admin
+      description: Get the details of the identified Loyalty Program
+    patch:
+      summary: Update Loyalty Program
+      operationId: updateLoyaltyProgram
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoyaltyProgramResponse'
+        '400':
+          description: 'Bad request, such as when name is not unique.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+      security:
+        - Authorization: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoyaltyProgramProperties'
+      description: 'Updates the Loyalty Program with the provided values. Returns the full record. As always, name must be unique.'
+      tags:
+        - admin
+  /card_acceptors:
+    post:
+      summary: Register Card Acceptor Loyalty Configuration
+      operationId: registerCardAcceptor
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardAcceptorResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+      description: |-
+        Register the Card Acceptor with the provided Loyalty Program. A Card Acceptor can only be linked to a single Loyalty Program. This call will operate within a transaction, during which it will also call the Acquire service to update its Card Acceptor with the Loyalty Program linked to the Card Acceptor. If this call fails, the change will be rolled back.
+
+        If the Card Acceptor has already been registered, this call will update it. This is to keep the transaction locking and Acquire service updating logic in one place for easier maintenance and more consistent behaviour.
+      security:
+        - Authorization: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardAcceptor'
+      tags:
+        - admin
+  '/card_acceptors/{cardAcceptorGuid}':
+    parameters:
+      - schema:
+          type: string
+        name: cardAcceptorGuid
+        in: path
+        required: true
+    get:
+      summary: Get Card Acceptor Loyalty Configuration
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardAcceptorResponse'
+      operationId: getCardAcceptor
+      security:
+        - Authorization: []
+      tags:
+        - admin
+      description: Get the Loyalty Configuration of the identified Card Acceptor
+    patch:
+      summary: ''
+      operationId: updateCardAcceptor
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardAcceptorResponse'
+      description: Update the loyalty configuration of a Card Acceptor
+      security:
+        - Authorization: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardAcceptorProperties'
+      tags:
+        - admin
+  /redemptions:
+    post:
+      summary: Redeem Loyalty Token
+      operationId: processRedemption
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RedemptionResponse'
+      description: "Redeem a Loyalty Token. The request will be mapped to the Loyalty Program linked to the Card Acceptor, using the program's protocol identifier and base URL."
+      security:
+        - Authorization: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RedemptionRequest'
+      tags:
+        - terminal
+  '/programs/{loyaltyProgramGuid}/enrol_mobile':
+    parameters:
+      - schema:
+          type: string
+        name: loyaltyProgramGuid
+        in: path
+        required: true
+    post:
+      summary: Enrol Mobile Number
+      operationId: enrolMobile
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+      description: 'Request to enrol a mobile number with a given Loyalty Program. '
+      security:
+        - Authorization: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrolMobileRequest'
+      tags:
+        - internal
+components:
+  schemas:
+    ApiResponse:
+      title: ApiResponse
+      type: object
+      description: 'Base API response object used for all API responses. This can include cases when there are server errors, as the responseCode allows for finer grained error reporting than the HTTP status alone.'
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+    LoyaltyProgram:
+      title: LoyaltyProgram
+      type: object
+      description: Extends LoyaltyProgramProperties to include the loyaltyProgramGuid for a complete record.
+      properties:
+        loyaltyProgramGuid:
+          type: string
+        name:
+          type: string
+        baseUrl:
+          type: string
+        protocol:
+          type: string
+          enum:
+            - YOYO
+    LoyaltyProgramResponse:
+      title: LoyaltyProgramResponse
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        loyaltyProgram:
+          $ref: '#/components/schemas/LoyaltyProgram'
+    LoyaltyProgramListResponse:
+      title: LoyaltyProgramListResponse
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        loyaltyProgramList:
+          type: array
+          items:
+            $ref: '#/components/schemas/LoyaltyProgram'
+    LoyaltyProgramProperties:
+      title: LoyaltyProgramProperties
+      type: object
+      properties:
+        name:
+          type: string
+        baseUrl:
+          type: string
+        protocol:
+          type: string
+          enum:
+            - YOYO
+    CardAcceptorProperties:
+      title: CardAcceptorProperties
+      type: object
+      properties:
+        loyaltyProgramGuid:
+          type: string
+        loyaltyAccessToken:
+          type: string
+    CardAcceptor:
+      title: CardAcceptor
+      type: object
+      description: Extends CardAcceptorProperties to include the cardAcceptorGuid for a complete record.
+      properties:
+        cardAcceptorGuid:
+          type: string
+        loyaltyProgramGuid:
+          type: string
+        loyaltyAccessToken:
+          type: string
+    CardAcceptorResponse:
+      title: CardAcceptorResponse
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        cardAcceptor:
+          $ref: '#/components/schemas/CardAcceptor'
+    RedemptionRequest:
+      title: RedemptionRequest
+      type: object
+      properties:
+        cardAcceptorGuid:
+          type: string
+        terminalGuid:
+          type: string
+        loyaltyToken:
+          type: string
+        totalAmount:
+          type: integer
+        currency:
+          type: string
+    Redemption:
+      title: Redemption
+      type: object
+      properties:
+        id:
+          type: integer
+        cardAcceptorGuid:
+          type: string
+        terminalGuid:
+          type: string
+        loyaltyToken:
+          type: string
+        totalAmount:
+          type: integer
+        currency:
+          type: string
+        discountAmount:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        loyaltyReference:
+          type: string
+        state:
+          type: string
+    RedemptionResponse:
+      title: RedemptionResponse
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        redemption:
+          $ref: '#/components/schemas/Redemption'
+    Transaction:
+      title: Transaction
+      type: object
+      description: This object describes the general list of fields relevant when retrieving a transaction.
+      properties:
+        transactionId:
+          type: integer
+        totalAmount:
+          type: integer
+          description: 'Total Transaction Amount, including tip.'
+        tipAmount:
+          type: integer
+          description: Tip Amount.
+        state:
+          type: string
+          enum:
+            - APPROVED
+            - DECLINED
+            - CANCELLED
+            - REVERSING
+            - REVERSED
+            - FAILED
+            - PENDING
+        cardEntryMode:
+          type: string
+          enum:
+            - manual
+            - magstripe
+            - chip
+            - contactless_magstripe
+            - contactless_chip
+            - other
+        cardMaskedNumber:
+          type: string
+          minLength: 8
+          maxLength: 19
+        cardSchemeName:
+          type: string
+        cardToken:
+          type: string
+        cardExpiry:
+          type: string
+          description: Formatted as MMYY
+        authCode:
+          type: string
+        posTransactionId:
+          type: string
+          description: Transaction ID as provided by the POS for support purposes.
+        currency:
+          type: string
+          description: ISO 4217 Alpha-3 currency code
+        requestAmount:
+          type: integer
+          description: 'Requested Transaction Amount, excluding tip.'
+        cardVerificationType:
+          type: string
+          enum:
+            - undefined
+            - signature
+            - pin
+            - pin_signature
+            - failed
+            - not_required
+            - other
+        switchTransactionId:
+          type: string
+        cashierId:
+          type: string
+          description: ''
+        transactionType:
+          type: string
+          enum:
+            - payment
+            - refund
+        createDate:
+          type: string
+          description: createDate UTC timezone
+          example: 'yyyy-MM-dd HH:mm:ss'
+      required:
+        - state
+        - posTransactionId
+        - currency
+        - requestAmount
+    EnrolMobileRequest:
+      title: EnrolMobileRequest
+      type: object
+      properties:
+        mobileNumber:
+          type: string
+        transaction:
+          $ref: '#/components/schemas/Transaction'
+  securitySchemes:
+    Authorization:
+      type: http
+      scheme: bearer
+      description: ''
+tags:
+  - name: admin
+    description: Administer the Loyalty functionality of the service
+  - name: loyalty provider
+    description: Methods available to Loyalty Providers
+  - name: terminal
+    description: Methods available to terminals
+  - name: internal
+    description: Calls used internally between services
