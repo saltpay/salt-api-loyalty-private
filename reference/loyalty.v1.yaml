@@ -105,36 +105,6 @@ paths:
       description: 'Updates the Loyalty Program with the provided values. Returns the full record. As always, name must be unique.'
       tags:
         - admin
-  /card_acceptors:
-    post:
-      summary: Register Card Acceptor Loyalty Configuration
-      operationId: registerCardAcceptor
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CardAcceptorResponse'
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
-      description: |-
-        Register the Card Acceptor with the provided Loyalty Program. A Card Acceptor can only be linked to a single Loyalty Program. This call will operate within a transaction, during which it will also call the Acquire service to update its Card Acceptor with the Loyalty Program linked to the Card Acceptor. If this call fails, the change will be rolled back.
-
-        If the Card Acceptor has already been registered, this call will update it. This is to keep the transaction locking and Acquire service updating logic in one place for easier maintenance and more consistent behaviour.
-      security:
-        - Authorization: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CardAcceptor'
-      tags:
-        - admin
   '/card_acceptors/{cardAcceptorGuid}':
     parameters:
       - schema:
