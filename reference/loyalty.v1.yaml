@@ -167,7 +167,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CardAcceptorResponse'
-      description: Update the loyalty configuration of a Card Acceptor
+      description: 'Update the loyalty configuration of a Card Acceptor. If the Card Acceptor does not exist, record it using the details provided.'
       security:
         - Authorization: []
       requestBody:
