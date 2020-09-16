@@ -221,6 +221,11 @@ components:
           type: string
           enum:
             - YOYO
+        state:
+          type: string
+          enum:
+            - A
+            - D
     LoyaltyProgramResponse:
       title: LoyaltyProgramResponse
       type: object
@@ -255,6 +260,11 @@ components:
           type: string
           enum:
             - YOYO
+        state:
+          type: string
+          enum:
+            - A
+            - D
     CardAcceptorProperties:
       title: CardAcceptorProperties
       type: object
@@ -262,6 +272,8 @@ components:
         loyaltyProgramGuid:
           type: string
         loyaltyAccessToken:
+          type: string
+        state:
           type: string
     CardAcceptor:
       title: CardAcceptor
@@ -274,6 +286,11 @@ components:
           type: string
         loyaltyAccessToken:
           type: string
+        state:
+          type: string
+          enum:
+            - A
+            - D
     CardAcceptorResponse:
       title: CardAcceptorResponse
       type: object
@@ -438,4 +455,4 @@ tags:
   - name: terminal
     description: Methods available to terminals
   - name: internal
-    description: Calls used internally between services
+    description: Methods available to internal services
