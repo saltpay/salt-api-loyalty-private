@@ -220,7 +220,8 @@ components:
         protocol:
           type: string
           enum:
-            - YOYO
+            - YOYOGO
+            - DUMMY
         state:
           type: string
           enum:
@@ -259,7 +260,8 @@ components:
         protocol:
           type: string
           enum:
-            - YOYO
+            - YOYOGO
+            - DUMMY
         state:
           type: string
           enum:
