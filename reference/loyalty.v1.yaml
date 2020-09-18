@@ -432,6 +432,11 @@ components:
           type: string
           description: createDate UTC timezone
           example: 'yyyy-MM-dd HH:mm:ss'
+        accountType:
+          type: string
+          enum:
+            - Credit
+            - Debit
       required:
         - state
         - posTransactionId
