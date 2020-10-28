@@ -397,12 +397,13 @@ components:
         cardEntryMode:
           type: string
           enum:
-            - manual
-            - magstripe
-            - chip
-            - contactless_magstripe
-            - contactless_chip
-            - other
+            - ICC
+            - MSR
+            - CNP
+            - UNDEFINED
+            - CONTACTLESS_ICC
+            - CONTACTLESS_MSR
+            - ICC_FALLBACK_MSR
         cardMaskedNumber:
           type: string
           minLength: 8
@@ -449,6 +450,11 @@ components:
           type: string
           description: createDate UTC timezone
           example: 'yyyy-MM-dd HH:mm:ss'
+        accountType:
+          type: string
+          enum:
+            - Credit
+            - Debit
       required:
         - state
         - posTransactionId
